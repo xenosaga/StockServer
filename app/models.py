@@ -21,8 +21,9 @@ class Stock_Dividen(db.Model):
 class Stock_Status(db.Model):
     __tablename__ = 'stock_status'
     stock_num = db.Column(db.Integer, primary_key=True)
+    per = db.Column(db.Float)
     last_date = db.Column(db.Date)
     last_update = db.Column(db.DateTime, default=datetime.utcnow)
-        
+    
     def __repr__(self):
         return '<Stock status %r>' % str(self.stock_num)

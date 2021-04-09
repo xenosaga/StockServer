@@ -3,14 +3,41 @@ from .. import db
 from ..models import Stock_Dividen, Stock_Status
 
 def parse_query(action, stock, data):
+    print('parse query')
     res = {}
+    if(action == 'per'):
+        res = query_profit(stock, data)
+    elif(action == 'perr'):
+        res = query_profit_range(stock, data)
     return res
 
+def query_profit_range(stock, data):
+    res = {}
+    rs = Stock_Status.query.filter(per >= data['per']).all()
+    for row in rs:
+        r_row = {}
+        r_row['stock_num'] = row.stock_num
+        r_row['per'] = row.per
+        res.append(r_row)
+    print(res)
+    return res
+
+def query_profit(stock, data):
+    res = {}
+    rs = Stock_Status.query.filter_by(stock_num=stock).first()
+    if(rs is None):
+        res['per'] = 'TBD'
+        res['date'] = 'None'
+    else:
+        res['per'] = rs.per
+        res['date'] = rs.last_update
+
+    return res
 
 def parse_insert(action, stock, data):
     res = {}
     if(action == 'div'):
-        res = insert_div(stock, data)
+        res = insert_div(stock, data['data'])
     elif(action == 'status'):
         res = insert_status(stock, data)
     elif(action == 'test'):
@@ -34,6 +61,19 @@ def insert_div(stock, data):
         db.session.add(sd)
         db.session.commit()
 
+    return 'OK'
+
+def insert_status(stock, data):
+    sd = Stock_Status.query.filter_by(stock_num=stock).first()
+    if(sd is None):
+        sd = Stock_Status()
+        sd.stock_num = stock
+    sd.last_date = data['last_date']
+    sd.per = data['per']
+    sd.last_update = datetime.datetime.utcnow()
+    print(data)
+    db.session.add(sd)
+    db.session.commit()
     return 'OK'
 
 def delect_all(stock):
